@@ -5,3 +5,11 @@ class Dog:
 
 dog = Dog()
 dog.bark()
+
+# --- ここから追記 ---
+class Cat:
+    def meow(self):
+        print("ニャー！")
+
+cat = Cat()
+cat.meow()
