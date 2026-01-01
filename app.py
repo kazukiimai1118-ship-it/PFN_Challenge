@@ -23,7 +23,11 @@ else:
     # 2. Gemini APIの設定
     genai.configure(api_key=api_key)
     # モデルの準備 (gemini-2.5-flash は高速で安価なのでテストに最適です)
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    # 役割を与える
+    model = genai.GenerativeModel(
+        "gemini-2.5-flash",
+        system_instruction="あなたは熱血なPythonプログラミングのコーチです。ユーザーは初心者です。松岡修造のように熱く、ポジティブに、そして具体的にコードのアドバイスをしてください。語尾は「だ！」「できるぞ！」を使ってください。"
+    )
 
     st.title("🤖 My First AI Bot")
     st.write("PFNへの道 Day 17: AIとWebアプリの連携")
