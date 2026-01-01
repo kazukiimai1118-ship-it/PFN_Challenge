@@ -1,22 +1,42 @@
 import streamlit as st
+import os 
+import google.generativeai as genai
+from dotenv import load_dotenv
 
-st.title("Day 16: ユーザー入力の基本")
+# 1. 環境変数の読み込み
+# これがないとAPIキーが読み込めずエラーになります
+load_dotenv()
+api_key = os.getenv("GEMINI_API_KEY")
 
-# 1. テキスト入力フォーム (Text Input)
-# 変数 = st.text_input("ラベル")の形で使います
-name = st.text_input("あなたのお名前を教えてください")
-hobby = st.text_input("今、夢中になっていることは？")
-age = st.number_input("あなたのご年齢を教えてください", value=20, step=1)
+# キーが正しく読み込めているかチェック (本番では消すべきですが、デバック用に)
+if not api_key:
+    st.error("APIキーが見つかりません。 .envファイルを確認してください。")
+else:
+    # 2. Gemini APIの設定
+    genai.configure(api_key=api_key)
+    # モデルの準備 (gemini-2.5-flash は高速で安価なのでテストに最適です)
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
-# 2. ボタン (Button)
-# ボタンが押された瞬間だけ True になる
-if st.button("送信する"):
-    # 3. 条件分岐と表示
-    # 名前と趣味が両方入力されているかチェック
-    if name and hobby and age:
-        st.success(f"こんにちは、{name}さん！あなたは{age}歳なんですね！")
-        st.write(f"{hobby}、いいですね！PFNのエンジニアも{hobby}が好きかもしれませんよ。")
-        # 派手な演出 (風船が飛びます)
-        st.balloons()
-    else:
-        st.error("お名前と趣味と年齢のすべてを入力してください！")
+    st.title("🤖 My First AI Bot")
+    st.write("PFNへの道 Day 17: AIとWebアプリの連携")
+
+    # 3. ユーザー入力エリア
+    user_input = st.text_input("質問を入力してください", placeholder="例: Pythonの勉強法を教えて")
+
+    # 4. 送信ボタンと処理
+    if st.button("送信"):
+        if user_input:
+            # 処理中のグルグル表示 (UX向上)
+            with st.spinner("AIが考え中です..."):
+                try:
+                    # AIに質問を投げる
+                    response = model.generate_content(user_input)
+
+                    # 結果を表示する
+                    st.success("回答が来ました！")
+                    st.write(response.text)
+
+                except Exception as e:
+                    st.error(f"エラーが発生しました: {e}")
+        else:
+            st.warning("文字を入力してから送信ボタンを押してください。")
