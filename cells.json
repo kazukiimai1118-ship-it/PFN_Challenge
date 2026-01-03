@@ -1,0 +1,26 @@
+[
+    {
+        "id": "2274643f",
+        "parent_id": null,
+        "label": "Control",
+        "date": "2026-01-04",
+        "passage": 5,
+        "seeded_count": 500000,
+        "harvested_count": null,
+        "pdl": 0.0,
+        "doubling_time": null,
+        "status": "active"
+    },
+    {
+        "id": "249a9b67",
+        "parent_id": null,
+        "label": "Lot.A",
+        "date": "2026-01-04",
+        "passage": 10,
+        "seeded_count": 10000,
+        "harvested_count": null,
+        "pdl": 0.0,
+        "doubling_time": null,
+        "status": "active"
+    }
+]
