@@ -27,6 +27,7 @@ class CellManager:
 
         # 辞書データを作成 (Day 22の設計に基づく)
         new_cell = {
+            "cell_type": cell_type,
             "id": new_id,
             "parent_id": parent_id,
             "label": label,
