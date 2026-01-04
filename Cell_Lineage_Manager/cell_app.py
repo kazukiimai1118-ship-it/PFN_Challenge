@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from cell_manager import CellManager
+import graphviz
 
 # ページ設定 (ブラウザのタブ名などを設定)
 st.set_page_config(page_title="Cell Lineage Manager", layout="wide")
@@ -12,7 +13,7 @@ manager = CellManager()
 st.title("Cell Lineage Manager")
 
 # --- サイドバーをタブ分けする ---
-tab1, tab2 = st.sidebar.tabs(["新規登録", "継代 (Passage)"])
+tab1, tab2, tab3 = st.sidebar.tabs(["新規登録", "継代 (Passage)", "系統樹"])
 
 
 # === タブ１: 新規登録 ===
@@ -77,6 +78,28 @@ with tab2:
                     st.rerun() # 画面更新して表に反映
             else:
                 st.error("親細胞を選んでください")
+
+# === タブ３: 系統樹 ===
+with tab3:
+    st.write("系統樹を作成する場合")
+    st.header("🧬 細胞系統樹")
+    st.markdown("細胞の継代履歴をツリー形式で表示します。")
+
+    # ここで全データ読み込み (もし既に変数 load_cells などがあればそれを使う)
+    # 例: loaded_cells = load_data()
+    # 選択肢用のリストを作成 (IDと細胞名を表示)
+    # 辞書IDをキー、表示名を値にする
+    loaded_cells = manager.get_all_cells()
+
+    if not loaded_cells:
+        st.info("データがまだありません。")
+    else:
+        # グラフオブジェクト
+        lineage_graph = manager.render_lineage_graph(loaded_cells)
+
+        # Streamlitで描画
+        st.graphviz_chart(lineage_graph)
+
 
 # --- メイン画面: データ一覧表示 ---
 st.header("培養中の細胞一覧")

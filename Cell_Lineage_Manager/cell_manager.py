@@ -2,6 +2,8 @@ import json
 import os
 import uuid # 重複しないIDを作るためのライブラリ
 from datetime import datetime
+import calc
+import graphviz
 
 # データを保存するファイル名
 DATA_FILE = "cells.json"
@@ -45,6 +47,72 @@ class CellManager:
         print(f"✅ 細胞を追加しました: {cell_type} (ID: {new_id})")
         return new_cell
     
+    # ↓↓↓ [追加] この新しい目そっとをクラス内に追加足てください ↓↓↓
+    def register_passage(self, parent_id, harvested_count, seeded_count, label, hours=48):
+        """
+        継代処理を行う目そっと
+        １．親細胞のデータを更新 (回収数、倍加時間など)
+        ２．子細胞 (次世代)を新規作成
+        """
+
+        # 1. 親細胞を殺す
+        parent_cell = None
+        for cell in self.cells:
+            if cell["id"] == parent_id:
+                parent_cell = cell
+                break
+        if parent_cell is None:
+            print("エラー: 親細胞が見つかりません")
+            return None
+        
+        # 2. 計算モジュールを使ってPDLなどを算出
+        # 前回のPDLを取得 (なければ0)
+        prev_pdl = parent_cell.get("pdl", 0.0)
+
+        # PDL増加分と、新しい積層PDLを計算
+        delta_pdl, new_pdl = calc.calculate_pdl(
+            parent_cell["seeded_count"],
+            harvested_count,
+            prev_pdl
+        )
+
+        # 倍加時間 (Doubuling Time)を計算
+        dt = calc.calculate_doubling_time(hours, delta_pdl)
+
+        # 3. 親細胞のデータを更新 (回収情報などを記録)
+        parent_cell["harvested_count"] = harvested_count
+        parent_cell["doubling_time"] = dt
+        # 親細胞はもう役割を終えたのでステータスを変更しても良いが、今回はそのまま
+
+        # 4. 子細胞 (次世代)の登録
+        # 親の情報を引き継ぐ
+        new_passage = parent_cell["passage"] + 1
+        cell_type = parent_cell["cell_type"]
+
+        # add_cellを再利用して登録 (PDLは計算済みの新しい値をセットする必要があるため、少し工夫が必要)
+        # ここでは直接辞書を作って追加する
+        new_id = str(uuid.uuid4())[:8]
+        today = datetime.now().strftime("%Y-%m-%d")
+
+        new_cell = {
+            "cell_type": cell_type,
+            "id": new_id,
+            "parent_id": parent_id,     # 親のIDを記録！これがツリーの元になる
+            "label": label,
+            "date": today,
+            "passage": new_passage,
+            "seeded_count": int(seeded_count),
+            "harvested_count": None,    # まだ回収していない
+            "pdl": new_pdl,             # 積算PDLを引き継ぐ
+            "doubling_time": None,
+            "status": "active"
+        }
+
+        self.cells.append(new_cell)
+        self.save_data() # 保存
+
+        return new_cell
+    
     def get_all_cells(self):
         """
         全データを返す
@@ -77,6 +145,25 @@ class CellManager:
         else:
             print("🆕 新規データファイルを作成します。")
             self.cells = []
+
+    def render_lineage_graph(self, cell_list):
+        """
+        細胞リストを受け取り、Graphvizのグラフオブジェクトを返す関数
+        """
+        # Graphvizのグラフ定義
+        graph = graphviz.Digraph()
+        graph.attr(rankdir='LR')    # 左から右へ流れるように配置 (縦が良い場合は削除)
+
+        # ノードとエッジの作製
+        for cell in cell_list:
+            # ノードの追加 (ラベルには細胞名を表示)
+            # shape='box'で見やすく、style='filled'などで色付けも可能
+            graph.node(cell['id'], label=cell['label'], shape='box', style='rounded')
+
+            # 親がいる場合はエッジ(線をつなぐ)
+            if cell.get('parent_id'):
+                graph.edge(cell['parent_id'], cell["id"])
+        return graph
 
 # --- 動作確認用 ---
 if __name__ == "__main__":
