@@ -98,7 +98,7 @@ with tab3:
         lineage_graph = manager.render_lineage_graph(loaded_cells)
 
         # Streamlitで描画
-        st.graphviz_chart(lineage_graph)
+        st.graphviz_chart(lineage_graph, use_container_width=True)
 
 
 # --- メイン画面: データ一覧表示 ---
