@@ -164,8 +164,37 @@ class CellManager:
             if cell.get('parent_id'):
                 graph.edge(cell['parent_id'], cell["id"])
         return graph
+    
+    # 細胞の削除メソッド
+    def delete_cell(self, cell_id):
+        """
+        指定されたIDの細胞を削除するメソッド (リスト管理版)
+        """
+        # 1. 子細胞がいるかチェック
+        # self.cellsリストの中から、parent_id が 削除対象(cell_id) と一致するものを探す
+        children = [c for c in self.cells if c.get("parent_id") == cell_id]
+
+        if len(children) > 0:
+            # 子がいるので削除拒否
+            child_names = [c.get("cell_type", "不明") for c in children]
+            return False, f"エラー: この細胞は子細胞 ({', '.join(child_names)}など)をもっているため削除できません。"
+        
+        # 2. 削除実行
+        # 「削除対象のIDではないもの」だけを集めて、新しいリストにする (=削除対象だけ除外される)
+        original_count = len(self.cells)
+        self.cells = [c for c in self.cells if c["id"] != cell_id]
+
+        # 念のため、本当に減ったかチェック
+        if len(self.cells) == original_count:
+            return False, "エラー: 指定されたIDの細胞が見つかりませんでした。"
+        
+        # 3. 保存
+        self.save_data()
+
+        return True, "削除に成功しました。"
 
 # --- 動作確認用 ---
+"""
 if __name__ == "__main__":
     manager = CellManager()
 
@@ -176,4 +205,5 @@ if __name__ == "__main__":
     # 現在のリストを表示
     print("\n--- 現在の細胞リスト ---")
     for cell in manager.get_all_cells():
-        print(cell) 
+        print(cell)
+"""
