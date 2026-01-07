@@ -50,5 +50,18 @@
         "pdl": 2.000043291191491,
         "doubling_time": null,
         "status": "active"
+    },
+    {
+        "cell_type": "SC2_5",
+        "id": "f66ba520",
+        "parent_id": null,
+        "label": "python",
+        "date": "2026-01-08",
+        "passage": 1,
+        "seeded_count": 500000,
+        "harvested_count": null,
+        "pdl": 0.0,
+        "doubling_time": null,
+        "status": "active"
     }
 ]

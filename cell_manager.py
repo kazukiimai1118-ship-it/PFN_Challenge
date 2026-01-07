@@ -192,7 +192,34 @@ class CellManager:
         self.save_data()
 
         return True, "削除に成功しました。"
+    
+    # 子孫を探す機能
+    def get_lineage(self, root_id):
+        """
+        指定されたID (root_id) と、そのすべての子孫細胞のリストを返すメソッド
+        """
+        # 1. 根本となる親細胞を探す
+        root_cell = next((c for c in self.cells if c["id"] == root_id), None)
+        if not root_cell:
+            return []
+        
+        # 2. 結果リスト (まずは親だけ入れる)
+        lineage_cells = [root_cell]
 
+        # 3. 再帰的に子を探す内部関数
+        def find_children_recursive(current_parent_id):
+            # parent_id が current_parent_id と一致する細胞 (=直下の子) を探す
+            children = [c for c in self.cells if c.get("parent_id") == current_parent_id]
+
+            for child in children:
+                lineage_cells.append(child) # 結果に追加
+                find_children_recursive(child["id"]) # ★ここが再帰！その子の子供も探しに行く
+
+        # 4. 探索開始
+        find_children_recursive(root_id)
+
+        return lineage_cells
+    
 # --- 動作確認用 ---
 """
 if __name__ == "__main__":

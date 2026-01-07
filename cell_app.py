@@ -151,23 +151,47 @@ with tab4:
 
 # === タブ2: 系統樹 ===
 with tab5:
-    st.write("系統樹を作成する場合")
     st.header("🧬 細胞系統樹")
     st.markdown("細胞の継代履歴をツリー形式で表示します。")
 
-    # ここで全データ読み込み (もし既に変数 load_cells などがあればそれを使う)
-    # 例: loaded_cells = load_data()
-    # 選択肢用のリストを作成 (IDと細胞名を表示)
-    # 辞書IDをキー、表示名を値にする
-    loaded_cells = manager.get_all_cells()
+    # --- 1. フィルターUIの追加 ---
+    filter_mode = st.radio(
+        "表示モード",
+        ["すべて表示", "特定の系統のみ表示"],
+        horizontal=True
+    )
 
-    if not loaded_cells:
-        st.info("データがまだありません。")
+    target_cells = [] # 最終的に表示する細胞リスト
+
+    if filter_mode == "すべて表示":
+        # 全データを取得
+        target_cells = manager.get_all_cells()
+
+    else: # "特定の系統のみ表示" の場合
+        if manager.cells:
+            # 選択肢の作製
+            options = {c["id"]: f"{c['cell_type']} (ID: {c['id'][:6]}...)" for c in manager.cells}
+
+            # 起点となる細胞を選択
+            selected_root_id = st.selectbox(
+                "起点となる細胞を選択 (その子孫を表示します)",
+                options=list(options.keys()),
+                format_func=lambda x: options[x]
+            )
+
+            # ★ここでさっき作ったメソッドを使う
+            target_cells = manager.get_lineage(selected_root_id)
+
+            st.info(f"選択された系統の細胞数: {len(target_cells)}")
+        else:
+            st.warning("データがありません。")
+
+    # --- 2. 描画 ---
+    if not target_cells:
+        st.info("表示するデータがありません。")
     else:
-        # グラフオブジェクト
-        lineage_graph = manager.render_lineage_graph(loaded_cells)
-
-        # Streamlitで描画
+        # フィルタリングされたリスト(target_cells)を渡してグラフ化
+        lineage_graph = manager.render_lineage_graph(target_cells)
         st.graphviz_chart(lineage_graph, use_container_width=True)
 
 # デバッグ用: JSONの中身をそのまま表示 (開発中のみ便利)
