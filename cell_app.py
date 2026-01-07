@@ -13,7 +13,7 @@ manager = CellManager()
 st.title("Cell Lineage Manager")
 
 # --- サイドバーをタブ分けする ---
-tab1, tab2, tab3 = st.sidebar.tabs(["新規登録", "継代 (Passage)", "系統樹"])
+tab1, tab2, tab3 = st.sidebar.tabs(["新規登録", "継代 (Passage)", "細胞の削除"])
 
 
 # === タブ１: 新規登録 ===
@@ -35,10 +35,8 @@ with tab1:
                 st.sidebar.success(f"{cell_type}を登録しました！")
             else:
                 st.sidebar.error("細胞種名は必須です。")
-    
-    
 
-# === タブ２: 継代操作 (今日のメイン！) ===
+# === タブ２: 継代操作 ===
 with tab2:
     st.write("培養中の細胞を継代する場合")
 
@@ -79,8 +77,80 @@ with tab2:
             else:
                 st.error("親細胞を選んでください")
 
-# === タブ３: 系統樹 ===
+# === タブ３: 細胞の削除 ===
 with tab3:
+    st.write("登録している細胞を削除する場合")
+
+    st.subheader("細胞データの削除")
+
+    # リストから選択肢を作成
+    # manager.cells は辞書のリストなので、forループで回す
+    if manager.cells:
+        # IDをキー、表示名を値にする辞書
+        cell_options = {
+            c["id"]: f"{c.get('cell_type')} (ID: {c['id'][:6]}...)"
+            for c in manager.cells
+        }
+
+        # セレクトボックス
+        target_id_to_delete = st.selectbox(
+            "削除する細胞を選択",
+            options=list(cell_options.keys()),
+            format_func=lambda x: cell_options[x]
+        )
+
+        # 削除ボタン
+        if st.button("削除実行"):
+            # Managerに削除を依頼
+            success, msg = manager.delete_cell(target_id_to_delete)
+
+            if success:
+                st.success(msg)
+                import time
+                time.sleep(1)   # メッセージを読ませるために一瞬待つ
+                st.rerun()      # 画面更新
+            else:
+                st.error(msg)
+        else:
+            st.info("登録されている細胞はありません。")
+
+# --- メイン画面をタブ分けする ---
+tab4, tab5 = st.tabs(["細胞管理リスト", "系統樹ビュー"])
+
+# --- メイン画面: データ一覧表示 ---
+
+# === タブ1: 管理画面 ===
+with tab4:
+    st.header("培養中の細胞一覧")
+
+    # データを取得
+    cells = manager.get_all_cells()
+
+    if cells:
+        # 見やすいようにPandasデータフレームに変換
+        df = pd.DataFrame(cells)
+
+        # 表示したい列だけ選んで、列名を日本語にする (オプション)
+        display_columns = {
+            "id": "ID",
+            "cell_type": "細胞種",
+            "label": "ラベル",
+            "passage": "継代数",
+            "seeded_count": "播種数",
+            "date": "開始数",
+            "status": "状態"
+        }
+
+        # データフレームを表示 (use_container_width=Trueで横幅いっぱいに)
+        st.dataframe(
+            df[display_columns.keys()].rename(columns=display_columns),
+            use_container_width=True
+        )
+    else:
+        st.info("まだ登録された細胞はありません。サイドバーから登録してください。")
+
+# === タブ2: 系統樹 ===
+with tab5:
     st.write("系統樹を作成する場合")
     st.header("🧬 細胞系統樹")
     st.markdown("細胞の継代履歴をツリー形式で表示します。")
@@ -99,36 +169,6 @@ with tab3:
 
         # Streamlitで描画
         st.graphviz_chart(lineage_graph, use_container_width=True)
-
-
-# --- メイン画面: データ一覧表示 ---
-st.header("培養中の細胞一覧")
-
-# データを取得
-cells = manager.get_all_cells()
-
-if cells:
-    # 見やすいようにPandasデータフレームに変換
-    df = pd.DataFrame(cells)
-
-    # 表示したい列だけ選んで、列名を日本語にする (オプション)
-    display_columns = {
-        "id": "ID",
-        "cell_type": "細胞種",
-        "label": "ラベル",
-        "passage": "継代数",
-        "seeded_count": "播種数",
-        "date": "開始数",
-        "status": "状態"
-    }
-
-    # データフレームを表示 (use_container_width=Trueで横幅いっぱいに)
-    st.dataframe(
-        df[display_columns.keys()].rename(columns=display_columns),
-        use_container_width=True
-    )
-else:
-    st.info("まだ登録された細胞はありません。サイドバーから登録してください。")
 
 # デバッグ用: JSONの中身をそのまま表示 (開発中のみ便利)
 # st.write(cells)

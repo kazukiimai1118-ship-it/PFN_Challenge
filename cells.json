@@ -13,32 +13,6 @@
         "status": "active"
     },
     {
-        "cell_type": "iPS-201B7",
-        "id": "815291b8",
-        "parent_id": null,
-        "label": "Lot.A",
-        "date": "2026-01-04",
-        "passage": 10,
-        "seeded_count": 10000,
-        "harvested_count": null,
-        "pdl": 0.0,
-        "doubling_time": null,
-        "status": "active"
-    },
-    {
-        "cell_type": "SC2_5",
-        "id": "53c5b6ad",
-        "parent_id": null,
-        "label": "",
-        "date": "2026-01-04",
-        "passage": 3,
-        "seeded_count": 500000,
-        "harvested_count": null,
-        "pdl": 0.0,
-        "doubling_time": null,
-        "status": "active"
-    },
-    {
         "cell_type": "HeLa",
         "id": "8d4c5cc0",
         "parent_id": "e90a02a7",
@@ -74,19 +48,6 @@
         "seeded_count": 500000,
         "harvested_count": null,
         "pdl": 2.000043291191491,
-        "doubling_time": null,
-        "status": "active"
-    },
-    {
-        "cell_type": "CKO",
-        "id": "1a8dd790",
-        "parent_id": null,
-        "label": "こんにちは",
-        "date": "2026-01-05",
-        "passage": 5,
-        "seeded_count": 500000,
-        "harvested_count": null,
-        "pdl": 0.0,
         "doubling_time": null,
         "status": "active"
     }
